@@ -24,28 +24,38 @@ var rafDebounce = (function( window ){
     };
   }
 
+  state.scroll.handler = function( evt ) {
+    lastScrollY = window.scrollY;
 
-  function onResize( evt ) {
+    if ( ! state.scroll.ticking ) {
+      processQueue("scroll", [ evt, lastScrollY ] );
+    }
+  };
+
+  state.resize.handler = function( evt ) {
     lastWidth = window.innerWidth;
     lastHeight = window.innerHeight;
 
     if ( ! state.resize.ticking ) {
       processQueue("resize", [ evt, lastWidth, lastHeight ] );
     }
-  }
+  };
 
-  function onScroll( evt ) {
-    lastScrollY = window.scrollY;
+  function processQueue( type, context, args ) {
+    var state = state[ type ],
+        queue = state.queue;
 
-    if ( ! state.scroll.ticking ) {
-      processQueue("scroll", [ evt, lastScrollY ] );
+    if ( !state.ticking ) {
+      
+      raf( function(){
+        state.ticking = false;
+
+        for ( var i = 0, len = queue.length; i < len; i++ ) {
+          queue[ i ].apply( window, args );
+        }
+      });
     }
-  }
-
-  function processQueue( type, args ) {
-    var queue = state[ type ].queue;
-
-
+    state.ticking = true;
   }
 
   return {
@@ -65,8 +75,10 @@ var rafDebounce = (function( window ){
     },
     off: function( type, key ) {
       if ( typeof key !== "string" ) {
-
+        key = "anon";
       }
+
+      delete state[ type ].queue[ key ];
     }
   };
 
