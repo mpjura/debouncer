@@ -50,7 +50,7 @@ var rafDebounce = (function( window ){
       raf( function(){
         state.ticking = false;
 
-        for ( var i = 0, len = queue.length; i < len; i++ ) {
+        for ( var i in queue ) {
           queue[ i ].apply( window, args );
         }
       });
@@ -72,13 +72,28 @@ var rafDebounce = (function( window ){
       }
 
       s.queue[ key ].push( callback );
+
+      if ( ! s.listening ) {
+        window.addEventListner( type, s.handler, false );
+      }
     },
     off: function( type, key ) {
       if ( typeof key !== "string" ) {
         key = "anon";
       }
 
-      delete state[ type ].queue[ key ];
+      var queue = state[ type ].queue,
+          keys  = 0;
+
+      delete queue[ key ];
+
+      for ( var i in queue ){
+        keys++;
+      }
+
+      if ( keys > 0 ) {
+        window.removeEventListener( type, s.handler, false );
+      }
     }
   };
 

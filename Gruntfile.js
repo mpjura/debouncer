@@ -5,7 +5,7 @@ module.exports = function( grunt ) {
     pkg: grunt.file.readJSON('package.json'),
     
     jshint: {
-      files: [ "*.js" ]
+      files: [ "*.js", "!*.min.js" ]
     },
 
     uglify: {
