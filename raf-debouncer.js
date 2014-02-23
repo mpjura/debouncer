@@ -65,16 +65,16 @@ var rafDebounce = (function( window ){
         key = "anon";
       }
 
-      var s = state[ type ];
+      var state = state[ type ];
 
-      if ( ! s.queue[ key ] ) {
-        s.queue[ key ] = [];
+      if ( ! state.queue[ key ] ) {
+        state.queue[ key ] = [];
       }
 
-      s.queue[ key ].push( callback );
+      state.queue[ key ].push( callback );
 
-      if ( ! s.listening ) {
-        window.addEventListner( type, s.handler, false );
+      if ( ! state.listening ) {
+        window.addEventListner( type, state.handler, false );
       }
     },
     off: function( type, key ) {
@@ -82,7 +82,8 @@ var rafDebounce = (function( window ){
         key = "anon";
       }
 
-      var queue = state[ type ].queue,
+      var state = state[ type ],
+          queue = state.queue,
           keys  = 0;
 
       delete queue[ key ];
@@ -92,7 +93,8 @@ var rafDebounce = (function( window ){
       }
 
       if ( keys > 0 ) {
-        window.removeEventListener( type, s.handler, false );
+        window.removeEventListener( type, state.handler, false );
+        state.listnening = false;
       }
     }
   };
