@@ -1,0 +1,12 @@
+{
+  "name": "raf-debouncer",
+  "version": "0.1.0",
+  "description": "Debounces resize/scroll events with requestAnimationFrame",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mpjura/raf-debouncer"
+  }
+  "devDependencies": {
+    "grunt": "~0.4.2"
+  }
+}
