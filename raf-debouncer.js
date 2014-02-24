@@ -28,7 +28,7 @@ var rafDebounce = (function( window ){
     lastScrollY = window.scrollY;
 
     if ( ! state.scroll.ticking ) {
-      processQueue("scroll", [ evt, lastScrollY ] );
+      processQueue("scroll", [ lastScrollY ] );
     }
   };
 
@@ -37,25 +37,31 @@ var rafDebounce = (function( window ){
     lastHeight = window.innerHeight;
 
     if ( ! state.resize.ticking ) {
-      processQueue("resize", [ evt, lastWidth, lastHeight ] );
+      processQueue("resize", [ lastWidth, lastHeight ] );
     }
   };
 
-  function processQueue( type, context, args ) {
-    var state = state[ type ],
-        queue = state.queue;
+  function processQueue( type, args ) {
+    var s = state[ type ],
+        q = s.queue;
 
-    if ( !state.ticking ) {
+    if ( !s.ticking ) {
       
       raf( function(){
-        state.ticking = false;
+        var queue;
 
-        for ( var i in queue ) {
-          queue[ i ].apply( window, args );
+        s.ticking = false;
+
+        for ( var i in q ) {
+          queue = q[i];
+
+          for ( var f = 0, len = queue.length; f < len; f++ ) {
+            queue[ f ].apply( window, args );
+          }
         }
       });
     }
-    state.ticking = true;
+    s.ticking = true;
   }
 
   return {
@@ -65,16 +71,17 @@ var rafDebounce = (function( window ){
         key = "anon";
       }
 
-      var state = state[ type ];
+      var s = state[ type ],
+          q = s.queue;
 
-      if ( ! state.queue[ key ] ) {
-        state.queue[ key ] = [];
+      if ( ! q[ key ] ) {
+        q[ key ] = [];
       }
 
-      state.queue[ key ].push( callback );
+      q[ key ].push( callback );
 
-      if ( ! state.listening ) {
-        window.addEventListner( type, state.handler, false );
+      if ( ! s.listening ) {
+        window.addEventListener( type, s.handler, false );
       }
     },
     off: function( type, key ) {
@@ -82,19 +89,20 @@ var rafDebounce = (function( window ){
         key = "anon";
       }
 
-      var state = state[ type ],
-          queue = state.queue,
-          keys  = 0;
+      var s = state[ type ],
+          q = state.queue,
+          keys  = false;
 
-      delete queue[ key ];
+      delete q[ key ];
 
-      for ( var i in queue ){
-        keys++;
+      for ( var i in q ){
+        keys = true;
+        break;
       }
 
-      if ( keys > 0 ) {
-        window.removeEventListener( type, state.handler, false );
-        state.listnening = false;
+      if ( keys ) {
+        window.removeEventListener( type, s.handler, false );
+        s.listnening = false;
       }
     }
   };
